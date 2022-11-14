@@ -5,33 +5,59 @@ var gStable = artifacts.require("./gStable.sol");
 var Swap = artifacts.require("./Swap.sol");
 var Vault = artifacts.require("./Vault.sol");
 
+let currencies = ["gEUR"];
+
 module.exports = function (deployer) {
-  // USD
-  // deployer.deploy(USD);
-  //
-  // gStable
-  // deployer.deploy(gStable, "gTTD", "gTTD");
-  //
-  // JLMarket
-  // deployer.deploy(
-  //   JLMarket,
-  //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-  //   "jUSDD",
-  //   "jUSDD"
-  // );
-  //
-  // Swap
-  deployer.deploy(
-    Swap,
-    "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-    "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-    "TY72rJ9tjnQSxgsqUDuXPUh2oPWC7cRmY6"
-  );
-  // Vault
-  // deployer.deploy(
-  //   Vault,
-  //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-  //   "TY72rJ9tjnQSxgsqUDuXPUh2oPWC7cRmY6"
-  // );
+  deployer.then(async () => {
+    for (let i = 0; i < currencies.length; i++) {
+      await deployer.deploy(gStable, currencies[i], currencies[i]);
+      await deployer.deploy(
+        Swap,
+        "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+        "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+        gStable.address
+      );
+      await deployer.deploy(
+        Vault,
+        "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+        "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+        gStable.address
+      );
+      console.log(currencies[i]);
+      console.log("gStable : ", gStable.address);
+      console.log("Swap : ", Swap.address);
+      console.log("Vault : ", Vault.address);
+    }
+  });
 };
+
+// module.exports = function (deployer) {
+//   // USD
+//   // deployer.deploy(USD);
+//   //
+//   //
+//   // JLMarket
+//   // deployer.deploy(
+//   //   JLMarket,
+//   //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+//   //   "jUSDD",
+//   //   "jUSDD"
+//   // );
+//   //
+//   // gStable
+//   // deployer.deploy(gStable, "gAWG", "gAWG");
+//   // Swap
+//   deployer.deploy(
+//     Swap,
+//     "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+//     "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+//     "TP7RNcfoSkmTSA5ZSdKeXfUnBb1KoU51VY"
+//   );
+//   // Vault
+//   // deployer.deploy(
+//   //   Vault,
+//   //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+//   //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+//   //   "TP7RNcfoSkmTSA5ZSdKeXfUnBb1KoU51VY"
+//   // );
+// };
