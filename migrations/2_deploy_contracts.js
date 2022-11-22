@@ -55,14 +55,14 @@ module.exports = function (deployer) {
 //       await deployer.deploy(gStable, currencies[i], currencies[i]);
 //       await deployer.deploy(
 //         Swap,
-//         shastaUSDD,
-//         shastaJLUSDD,
+//         nileUSDD,
+//         nileJLUSDD,
 //         gStable.address
 //       );
 //       await deployer.deploy(
 //         Vault,
-//         shastaUSDD,
-//         shastaJLUSDD,
+//         nileUSDD,
+//         nileJLUSDD,
 //         gStable.address
 //       );
 //       console.log(currencies[i]);
