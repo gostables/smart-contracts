@@ -43,6 +43,35 @@ module.exports = function (deployer) {
 
 
 
+// For Nile Testnet
+
+// let currencies = ["gGBP"];
+// const nileUSDD = "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU";
+// const nileJLUSDD = "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f";
+
+// module.exports = function (deployer) {
+//   deployer.then(async () => {
+//     for (let i = 0; i < currencies.length; i++) {
+//       await deployer.deploy(gStable, currencies[i], currencies[i]);
+//       await deployer.deploy(
+//         Swap,
+//         shastaUSDD,
+//         shastaJLUSDD,
+//         gStable.address
+//       );
+//       await deployer.deploy(
+//         Vault,
+//         shastaUSDD,
+//         shastaJLUSDD,
+//         gStable.address
+//       );
+//       console.log(currencies[i]);
+//       console.log("gStable : ", gStable.address);
+//       console.log("Swap : ", Swap.address);
+//       console.log("Vault : ", Vault.address);
+//     }
+//   });
+// };
 
 
 
