@@ -1,63 +1,110 @@
 const Web3 = require("web3");
-var USD = artifacts.require("./USD.sol");
+var USDD = artifacts.require("./USD.sol");
 var JLMarket = artifacts.require("./JLMarket.sol");
 var gStable = artifacts.require("./gStable.sol");
 var Swap = artifacts.require("./Swap.sol");
 var Vault = artifacts.require("./Vault.sol");
 
-let currencies = ["gEUR"];
 
+// Mock USDD and JLMarket creation on Testnets
 module.exports = function (deployer) {
-  deployer.then(async () => {
-    for (let i = 0; i < currencies.length; i++) {
-      await deployer.deploy(gStable, currencies[i], currencies[i]);
-      await deployer.deploy(
-        Swap,
-        "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-        "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-        gStable.address
-      );
-      await deployer.deploy(
-        Vault,
-        "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-        "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-        gStable.address
-      );
-      console.log(currencies[i]);
-      console.log("gStable : ", gStable.address);
-      console.log("Swap : ", Swap.address);
-      console.log("Vault : ", Vault.address);
-    }
-  });
-};
-
-// module.exports = function (deployer) {
-//   // USD
-//   // deployer.deploy(USD);
-//   //
-//   //
+// //   // USD
+//   // deployer.deploy(USDD);
+// //   //
+// //   //
 //   // JLMarket
 //   // deployer.deploy(
 //   //   JLMarket,
-//   //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+//   //   "TRcaXTbZgy17H2oUGqEUsYEgePbELAN9i8",
 //   //   "jUSDD",
 //   //   "jUSDD"
 //   // );
-//   //
-//   // gStable
-//   // deployer.deploy(gStable, "gAWG", "gAWG");
+
 //   // Swap
 //   deployer.deploy(
 //     Swap,
-//     "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-//     "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-//     "TP7RNcfoSkmTSA5ZSdKeXfUnBb1KoU51VY"
+//     "TRcaXTbZgy17H2oUGqEUsYEgePbELAN9i8",
+//     "TEP9rJhjRkKieNAvWQKoPmXYk7FeMVFZs8",
+//     "TGdqn3S1SeUJHqWJEHBAq7MbcQLjsc3utw"
 //   );
+
 //   // Vault
-//   // deployer.deploy(
-//   //   Vault,
-//   //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-//   //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-//   //   "TP7RNcfoSkmTSA5ZSdKeXfUnBb1KoU51VY"
-//   // );
+  deployer.deploy(
+    Vault,
+    "TRcaXTbZgy17H2oUGqEUsYEgePbELAN9i8",
+    "TEP9rJhjRkKieNAvWQKoPmXYk7FeMVFZs8",
+    "TGdqn3S1SeUJHqWJEHBAq7MbcQLjsc3utw"
+  );
+
+
+// //   //
+};
+
+
+
+
+
+
+
+// For Shasta Testnet
+
+// let currencies = ["gXCD"];
+// const shastaUSDD = "TRcaXTbZgy17H2oUGqEUsYEgePbELAN9i8";
+// const shastaJLUSDD = "TEP9rJhjRkKieNAvWQKoPmXYk7FeMVFZs8";
+
+// module.exports = function (deployer) {
+//   deployer.then(async () => {
+//     for (let i = 0; i < currencies.length; i++) {
+//       await deployer.deploy(gStable, currencies[i], currencies[i]);
+//       await deployer.deploy(
+//         Swap,
+//         shastaUSDD,
+//         shastaJLUSDD,
+//         gStable.address
+//       );
+//       await deployer.deploy(
+//         Vault,
+//         shastaUSDD,
+//         shastaJLUSDD,
+//         gStable.address
+//       );
+//       console.log(currencies[i]);
+//       console.log("gStable : ", gStable.address);
+//       console.log("Swap : ", Swap.address);
+//       console.log("Vault : ", Vault.address);
+//     }
+//   });
+// };
+
+
+
+
+// // For Tron Mainnet
+
+// let currencies = ["gTTD","gXCD","gBBD","gJMD","gAWG","gDOP","gBSD","gKYD","gCUP","gHTG","gEUR"];
+// const mainnetUSDD = "TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn";
+// const mainnetJLUSDD = "TX7kybeP6UwTBRHLNPYmswFESHfyjm9bAS";
+
+// module.exports = function (deployer) {
+//   deployer.then(async () => {
+//     for (let i = 0; i < currencies.length; i++) {
+//       await deployer.deploy(gStable, currencies[i], currencies[i]);
+//       await deployer.deploy(
+//         Swap,
+//         mainnetUSDD,
+//         mainnetJLUSDD,
+//         gStable.address
+//       );
+//       await deployer.deploy(
+//         Vault,
+//         mainnetUSDD,
+//         mainnetJLUSDD,
+//         gStable.address
+//       );
+//       console.log(currencies[i]);
+//       console.log("gStable : ", gStable.address);
+//       console.log("Swap : ", Swap.address);
+//       console.log("Vault : ", Vault.address);
+//     }
+//   });
 // };

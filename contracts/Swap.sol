@@ -10,7 +10,7 @@ import "./goStableBase.sol";
 
 contract Swap is Ownable, goStableBase {
     uint256 public conversionRatio = 0;
-    uint256 public swapFeesFactor = 0;
+    uint256 public swapFeesFactor = 30;
     uint256 public accumulatedSwapFees = 0;
     uint256 public rewardPC = 40;
 
