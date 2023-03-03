@@ -1,49 +1,54 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./JLMarket.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./gStable.sol";
-import "./goStableBase2.sol";
+import "./goStableBase.sol";
+import "./Rewards.sol";
 
-contract Vault is Ownable, goStableBase {
+contract VaultStableCoin is goStableBase, Pausable {
     mapping (uint => address) public gStableAddressMap;
 
     mapping (uint => uint256) public gStableIntervalMap;
     mapping (uint => uint256) public gStableTotalValueMap;
     mapping (uint => uint256) public gStableAllocatedRewardsMap;
 
-    // uint256 public interval = 2;
-    // uint256 public totalValue = 0;
-    // uint256 public allocatedRewards = 0;
-
     mapping(uint => mapping(address => uint256)) gStableBalanceMap;
     mapping(uint => mapping(address => uint256)) gStableLockPeriodMap;
     mapping(uint => mapping(address => uint256)) gStableRewardMap;
 
-    // mapping(address => uint256) balances;
-    // mapping(address => uint256) lockPeriod;
-    // mapping(address => uint256) rewards;
-
     mapping(uint => mapping(address => bool)) isParticipant;
     mapping(uint => address[]) participants;
+
+    address public rewardsAddress; 
 
     event Deposit(address depositor, uint256 amount, uint gStableId);
     event Withdrawal(address withdrawer, uint256 _tokens, uint gStableId);
 
     constructor(
         address stableCoinAddress,
-        address marketAddress
-    ) goStableBase(stableCoinAddress, marketAddress) {}
+        address marketAddress,
+        address rewardsAddress_ 
+    ) goStableBase(stableCoinAddress, marketAddress) {
+        rewardsAddress = rewardsAddress_;
+    }
+
+    function pause() public onlyAdmin(msg.sender) {
+        _pause();
+    }
+
+    function unpause() public onlyAdmin(msg.sender) {
+        _unpause();
+    }
+
+    function setRewardsAddress(address addr) public onlyAdmin(msg.sender) {
+        rewardsAddress = addr;
+    } 
 
     function setGStableAddress(uint id, address addr) public onlyAdmin(msg.sender) {
         gStableAddressMap[id] = addr;
+        gStableIntervalMap[id] = 2;
     }
-
-    function getGStableAddress(uint id) public view returns (address) {
-        return gStableAddressMap[id];
-    }    
 
     modifier hasGStableAddress(uint id) {
         require(gStableAddressMap[id] != address(0), "No gStable exists for this ID");
@@ -58,14 +63,6 @@ contract Vault is Ownable, goStableBase {
         return (gStableBalanceMap[id][hodler], gStableLockPeriodMap[id][hodler]);
     }
 
-    function getCurrentRewardsValue(uint id, address hodler)
-        public
-        view
-        returns (uint256)
-    {
-        return (gStableRewardMap[id][hodler]);
-    }
-
     function deposit(uint id, uint256 _amount) external hasGStableAddress(id) onlyPositive(_amount) {
         require(
             _amount <= stableCoin.balanceOf(msg.sender),
@@ -73,8 +70,11 @@ contract Vault is Ownable, goStableBase {
         );
 
         stableCoin.transferFrom(msg.sender, address(this), _amount);
+
         gStableBalanceMap[id][msg.sender] += _amount;
+        
         gStableLockPeriodMap[id][msg.sender] = block.timestamp + (gStableIntervalMap[id] * 1 minutes);
+        
         gStableTotalValueMap[id] += _amount;
 
         stableCoin.approve(address(market), _amount * 2);
@@ -128,4 +128,8 @@ contract Vault is Ownable, goStableBase {
         IgStable(gStableAddressMap[id]).transfer(msg.sender, amountgStable);
         gStableRewardMap[id][msg.sender] -= amountgStable;
     }
+
+    function claim(uint256 merkleIndex, uint256 index, uint256 amount, bytes32[] calldata merkleProof) public onlyAdmin(msg.sender) {
+        IRewards(rewardsAddress).claim(merkleIndex, index, amount, merkleProof);
+    }     
 }

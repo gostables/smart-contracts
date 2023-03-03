@@ -2,11 +2,11 @@ const Web3 = require("web3");
 var USDD = artifacts.require("./USD.sol");
 var JLMarket = artifacts.require("./JLMarket.sol");
 var gStable = artifacts.require("./gStable.sol");
-var Swap = artifacts.require("./Swap.sol");
-var Vault = artifacts.require("./Vault.sol");
+var SwapStableCoin = artifacts.require("./SwapStableCoin.sol");
+var VaultStableCoin = artifacts.require("./VaultStableCoin.sol");
+var Rewards = artifacts.require("./Rewards.sol");
 
 
-// Mock USDD and JLMarket creation on Testnets
 module.exports = function (deployer) {
 // //   // USD
 //   // deployer.deploy(USDD);
@@ -20,21 +20,24 @@ module.exports = function (deployer) {
 //   //   "jUSDD"
 //   // );
 
-//   // Swap
-//   deployer.deploy(
-//     Swap,
-//     "TRcaXTbZgy17H2oUGqEUsYEgePbELAN9i8",
-//     "TEP9rJhjRkKieNAvWQKoPmXYk7FeMVFZs8",
-//     "TGdqn3S1SeUJHqWJEHBAq7MbcQLjsc3utw"
-//   );
+  // // Rewards
+  // deployer.deploy(Rewards);
 
-//   // Vault
-  deployer.deploy(
-    Vault,
-    "TRcaXTbZgy17H2oUGqEUsYEgePbELAN9i8",
-    "TEP9rJhjRkKieNAvWQKoPmXYk7FeMVFZs8",
-    "TGdqn3S1SeUJHqWJEHBAq7MbcQLjsc3utw"
-  );
+  // // Swap
+  // deployer.deploy(
+  //   SwapStableCoin,
+  //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS"
+  // );
+
+  // // Vault
+  // deployer.deploy(
+  //   VaultStableCoin,
+  //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS"
+  // );
 
 
 // //   //
@@ -45,7 +48,7 @@ module.exports = function (deployer) {
 
 // For Nile Testnet
 
-// let currencies = ["gGBP"];
+// let currencies = ["gXCD"];
 // const nileUSDD = "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU";
 // const nileJLUSDD = "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f";
 
@@ -53,22 +56,8 @@ module.exports = function (deployer) {
 //   deployer.then(async () => {
 //     for (let i = 0; i < currencies.length; i++) {
 //       await deployer.deploy(gStable, currencies[i], currencies[i]);
-//       await deployer.deploy(
-//         Swap,
-//         nileUSDD,
-//         nileJLUSDD,
-//         gStable.address
-//       );
-//       await deployer.deploy(
-//         Vault,
-//         nileUSDD,
-//         nileJLUSDD,
-//         gStable.address
-//       );
 //       console.log(currencies[i]);
 //       console.log("gStable : ", gStable.address);
-//       console.log("Swap : ", Swap.address);
-//       console.log("Vault : ", Vault.address);
 //     }
 //   });
 // };

@@ -2,11 +2,9 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AdminAuth.sol";
 
-contract gStable is ERC20, Pausable, Ownable, AdminAuth {
+contract gStable is ERC20, AdminAuth {
     constructor(string memory name_, string memory symbol_)
         ERC20(name_, symbol_)
     {}

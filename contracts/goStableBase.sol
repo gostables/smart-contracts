@@ -2,54 +2,42 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./JLMarket.sol";
-import "./gStable.sol";
-import "./ClientAuth.sol";
+import "./AdminAuth.sol";
 
-contract goStableBase is ClientAuth {
+contract goStableBase is AdminAuth {
     IJLMarket market;
     IERC20 stableCoin;
-    IgStable gStableCoin;
+    
     uint256 public treasuryStableCoinValue = 0;
 
     constructor(
         address stableCoinAddress,
-        address marketAddress,
-        address gStableAddress
+        address marketAddress
     ) {
         stableCoin = IERC20(stableCoinAddress);
         market = IJLMarket(marketAddress);
         stableCoin.approve(marketAddress, 1000);
-        gStableCoin = IgStable(gStableAddress);
     }
 
     function getMarketAddress() public view returns (address) {
         return address(market);
     }
 
-    function getgStableCoinAddress() public view returns (address) {
-        return address(gStableCoin);
-    }
-
     function getStableCoinAddress() public view returns (address) {
         return address(stableCoin);
     }
 
-    function setMarket(address marketAddress) public onlyClients(msg.sender) {
+    function setMarket(address marketAddress) public onlyAdmin(msg.sender) {
         market = IJLMarket(marketAddress);
         stableCoin.approve(marketAddress, 1000);
     }
 
     function setStableCoin(address stableCoinAddress)
         public
-        onlyClients(msg.sender)
+        onlyAdmin(msg.sender)
     {
         stableCoin = IERC20(stableCoinAddress);
-    }
-
-    function setgStable(address gStableAddress) public onlyClients(msg.sender) {
-        gStableCoin = IgStable(gStableAddress);
     }
 
     modifier onlyPositive(uint256 val) {
@@ -59,7 +47,7 @@ contract goStableBase is ClientAuth {
 
     function investIntoTreasury(uint256 amount)
         external
-        onlyClients(msg.sender)
+        onlyAdmin(msg.sender)
     {
         require(
             amount <= stableCoin.balanceOf(address(this)),
@@ -74,7 +62,7 @@ contract goStableBase is ClientAuth {
 
     function withdrawFromTreasury(uint256 amount)
         external
-        onlyClients(msg.sender)
+        onlyAdmin(msg.sender)
     {
         require(
             amount <= treasuryStableCoinValue,

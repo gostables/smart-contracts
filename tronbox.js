@@ -32,7 +32,7 @@ Then, run the migration with:
     nile: {
       privateKey: process.env.PRIVATE_KEY_NILE,
       userFeePercentage: 100,
-      feeLimit: 1000 * 1e6,
+      feeLimit: 10000 * 1e6,
       fullHost: "https://api.nileex.io",
       network_id: "3",
     },
