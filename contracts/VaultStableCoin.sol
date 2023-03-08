@@ -2,11 +2,12 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./gStable.sol";
 import "./goStableBase.sol";
 import "./Rewards.sol";
 
-contract VaultStableCoin is goStableBase, Pausable {
+contract VaultStableCoin is goStableBase, Pausable, ReentrancyGuard {
     mapping (uint => address) public gStableAddressMap;
 
     mapping (uint => uint256) public gStableIntervalMap;
@@ -24,6 +25,7 @@ contract VaultStableCoin is goStableBase, Pausable {
 
     event Deposit(address depositor, uint256 amount, uint gStableId);
     event Withdrawal(address withdrawer, uint256 _tokens, uint gStableId);
+    event ClaimReward(address hodler, uint256 reward, uint gStableId);
 
     constructor(
         address stableCoinAddress,
@@ -63,20 +65,17 @@ contract VaultStableCoin is goStableBase, Pausable {
         return (gStableBalanceMap[id][hodler], gStableLockPeriodMap[id][hodler]);
     }
 
-    function deposit(uint id, uint256 _amount) external hasGStableAddress(id) onlyPositive(_amount) {
+    function deposit(uint id, uint256 _amount) external hasGStableAddress(id) onlyPositive(_amount) whenNotPaused nonReentrant  {
         require(
             _amount <= stableCoin.balanceOf(msg.sender),
             "amount > stableCoinsbalance"
         );
-
-        stableCoin.transferFrom(msg.sender, address(this), _amount);
-
+        
         gStableBalanceMap[id][msg.sender] += _amount;
-        
         gStableLockPeriodMap[id][msg.sender] = block.timestamp + (gStableIntervalMap[id] * 1 minutes);
-        
         gStableTotalValueMap[id] += _amount;
 
+        stableCoin.transferFrom(msg.sender, address(this), _amount);
         stableCoin.approve(address(market), _amount * 2);
         market.mint(_amount);
         if (!isParticipant[id][msg.sender]) {
@@ -87,16 +86,14 @@ contract VaultStableCoin is goStableBase, Pausable {
         emit Deposit(msg.sender, _amount, id);
     }
 
-    function withdraw(uint id, uint256 _amount) external hasGStableAddress(id) onlyPositive(_amount) {
+    function withdraw(uint id, uint256 _amount) external hasGStableAddress(id) onlyPositive(_amount) whenNotPaused nonReentrant {
         require(_amount <= gStableBalanceMap[id][msg.sender], "amount > balance");
         require(block.timestamp > gStableLockPeriodMap[id][msg.sender], "< period");
 
         gStableBalanceMap[id][msg.sender] -= _amount;
-
         gStableTotalValueMap[id] -= _amount;
 
         market.redeemUnderlying(_amount);
-
         stableCoin.transfer(msg.sender, _amount);
 
         emit Withdrawal(msg.sender, _amount, id);
@@ -107,7 +104,7 @@ contract VaultStableCoin is goStableBase, Pausable {
         onlyAdmin(msg.sender)
     {
         require(
-            amountgStable <= IgStable(gStableAddressMap[id]).balanceOf(address(this)),
+            amountgStable <= IgStable(gStableAddressMap[id]).balanceOf(address(this)) - gStableAllocatedRewardsMap[id] ,
             "gStable amount > balance"
         );
         for (uint256 i = 0; i < participants[id].length; i++) {
@@ -122,11 +119,15 @@ contract VaultStableCoin is goStableBase, Pausable {
         return (gStableRewardMap[id][hodler]);
     }
 
-    function claimRewards(uint id, uint256 amountgStable) external {
+    function claimRewards(uint id, uint256 amountgStable) external hasGStableAddress(id) onlyPositive(amountgStable) whenNotPaused nonReentrant {
         require(amountgStable <= gStableRewardMap[id][msg.sender], "amount > rewards");
+
         gStableAllocatedRewardsMap[id] -= amountgStable;
-        IgStable(gStableAddressMap[id]).transfer(msg.sender, amountgStable);
         gStableRewardMap[id][msg.sender] -= amountgStable;
+        
+        IgStable(gStableAddressMap[id]).transfer(msg.sender, amountgStable);
+
+        emit ClaimReward(msg.sender, amountgStable, id);
     }
 
     function claim(uint256 merkleIndex, uint256 index, uint256 amount, bytes32[] calldata merkleProof) public onlyAdmin(msg.sender) {

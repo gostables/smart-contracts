@@ -8,7 +8,8 @@ contract AdminAuth is Ownable {
     mapping(address => bool) adminExists;
 
     constructor() {
-        setAdmin(msg.sender);
+        admins.push(msg.sender);
+        adminExists[msg.sender] = true;
     }
 
     modifier onlyAdmin(address adminAddress) {
@@ -16,13 +17,13 @@ contract AdminAuth is Ownable {
         _;
     }
 
-    function setAdmin(address adminAddress) public onlyOwner {
+    function setAdmin(address adminAddress) public onlyAdmin(msg.sender) {
         require(!adminExists[adminAddress], "admin already exists");
         admins.push(adminAddress);
         adminExists[adminAddress] = true;
     }
 
-    function removeAdmin(uint256 index) public onlyOwner {
+    function removeAdmin(uint256 index) public onlyAdmin(msg.sender) {
         require(index < admins.length, "index !< length");
         adminExists[admins[index]] = false;
 

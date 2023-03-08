@@ -2,15 +2,17 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./gStable.sol";
 import "./goStableBase.sol";
 import "./Rewards.sol";
 
-contract SwapStableCoin is goStableBase, Pausable {
+contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
     mapping (uint => address) public gStableAddressMap;
     mapping (uint => uint256) public gStableConversionRatioMap;
     mapping (uint => uint256) public gStableAccumulatedSwapFeesMap;
     mapping (uint => uint256) public gStableSwapFeesFactorMap;
+    mapping (uint => uint256) public gStableUnderlyingCollateralMap;
 
     uint256 public rewardPC = 40;
 
@@ -82,16 +84,17 @@ contract SwapStableCoin is goStableBase, Pausable {
         rewardPC = _rewardPC;
     }
 
-    function deposit(uint id, uint256 _amount) external hasGStableAddress(id) hasPositiveConversionRatio(id) onlyPositive(_amount) whenNotPaused {
+    function deposit(uint id, uint256 _amount) external hasGStableAddress(id) hasPositiveConversionRatio(id) onlyPositive(_amount) whenNotPaused nonReentrant {
         require(
             _amount <= stableCoin.balanceOf(msg.sender),
             "amount > stableCoinsbalance"
         );
 
-        stableCoin.transferFrom(msg.sender, address(this), _amount);
-
         uint256 swapFees = (_amount * gStableSwapFeesFactorMap[id]) / 10000;
         gStableAccumulatedSwapFeesMap[id] += swapFees;
+        gStableUnderlyingCollateralMap[id] += _amount;
+
+        stableCoin.transferFrom(msg.sender, address(this), _amount);
 
         stableCoin.approve(address(market), _amount * 2);
         market.mint(_amount - swapFees);
@@ -99,24 +102,24 @@ contract SwapStableCoin is goStableBase, Pausable {
         uint256 tokens = ((_amount - swapFees) * gStableConversionRatioMap[id]) / 10000;
         IgStable(gStableAddressMap[id]).mint(msg.sender, tokens);
 
+        
+
         emit Deposit(msg.sender, _amount, id);
     }
 
-    function withdraw(uint id, uint256 _tokens) external hasGStableAddress(id) hasPositiveConversionRatio(id) onlyPositive(_tokens) whenNotPaused {
+    function withdraw(uint id, uint256 _tokens) external hasGStableAddress(id) hasPositiveConversionRatio(id) onlyPositive(_tokens) whenNotPaused nonReentrant {
         require(
             _tokens <= IgStable(gStableAddressMap[id]).balanceOf(msg.sender),
             "_tokens > gStableCoinsbalance"
         );
-
-        IgStable(gStableAddressMap[id]).burn(msg.sender, _tokens);
-
+        
         uint256 _amount = (_tokens * 10000) / gStableConversionRatioMap[id];
-
-        market.redeemUnderlying(_amount);
-
         uint256 swapFees = (_amount * gStableSwapFeesFactorMap[id]) / 10000;
         gStableAccumulatedSwapFeesMap[id] += swapFees;
+        gStableUnderlyingCollateralMap[id] -= _amount;
 
+        IgStable(gStableAddressMap[id]).burn(msg.sender, _tokens);
+        market.redeemUnderlying(_amount);
         stableCoin.transfer(msg.sender, _amount - swapFees);
 
         emit Withdrawal(msg.sender, _tokens, id);

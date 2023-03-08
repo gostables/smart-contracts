@@ -23,7 +23,7 @@ module.exports = function (deployer) {
   // // Rewards
   // deployer.deploy(Rewards);
 
-  // // Swap
+  // Swap
   // deployer.deploy(
   //   SwapStableCoin,
   //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
@@ -48,19 +48,16 @@ module.exports = function (deployer) {
 
 // For Nile Testnet
 
-// let currencies = ["gXCD"];
-// const nileUSDD = "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU";
-// const nileJLUSDD = "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f";
-
-// module.exports = function (deployer) {
-//   deployer.then(async () => {
-//     for (let i = 0; i < currencies.length; i++) {
-//       await deployer.deploy(gStable, currencies[i], currencies[i]);
-//       console.log(currencies[i]);
-//       console.log("gStable : ", gStable.address);
-//     }
-//   });
-// };
+let currencies = ["gTTDD"];
+module.exports = function (deployer) {
+  deployer.then(async () => {
+    for (let i = 0; i < currencies.length; i++) {
+      await deployer.deploy(gStable, currencies[i], currencies[i]);
+      console.log(currencies[i]);
+      console.log("gStable : ", gStable.address);
+    }
+  });
+};
 
 
 
