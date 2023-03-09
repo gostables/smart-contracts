@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./gStable.sol";
 import "./AdminAuth.sol";
 import "./SwapStableCoin.sol";
 
-contract SwapGStable is Pausable, AdminAuth {
+contract SwapGStable is AdminAuth {
     address public swapStableCoinAddress;
 
     event Swap(address hodler, uint fromId, uint fromTokens, uint toId, uint toTokens);
@@ -19,21 +19,12 @@ contract SwapGStable is Pausable, AdminAuth {
         require(val > 0, "<0");
         _;
     }    
-
-    function pause() public onlyAdmin(msg.sender) {
-        _pause();
-    }
-
-    function unpause() public onlyAdmin(msg.sender) {
-        _unpause();
-    }
-    
     
     function setSwapStableCoinAddress(address addr) public onlyAdmin(msg.sender) {
         swapStableCoinAddress = addr;
     }     
 
-    function swap(uint fromId, uint256 fromTokens, uint toId) external  onlyPositive(fromTokens) whenNotPaused {
+    function swap(uint fromId, uint256 fromTokens, uint toId) external  onlyPositive(fromTokens) {
 
         ISwapStableCoin swapStable = ISwapStableCoin(swapStableCoinAddress);
 
@@ -45,9 +36,19 @@ contract SwapGStable is Pausable, AdminAuth {
 
         swapStable.burn(msg.sender, fromId, fromTokens);
 
-        swapStable.mint(msg.sender, fromId, toTokens);
+        swapStable.mint(msg.sender, toId, toTokens);
         
         emit Swap(msg.sender, fromId, fromTokens, toId, toTokens);
     }
+
+    function marketDeposit( uint256 _amount) external onlyPositive(_amount) {
+        ISwapStableCoin swapStable = ISwapStableCoin(swapStableCoinAddress);
+        swapStable.marketDeposit(_amount);
+    }  
+
+    function marketRedeem( uint256 _amount) external onlyPositive(_amount) onlyAdmin(msg.sender) {
+        ISwapStableCoin swapStable = ISwapStableCoin(swapStableCoinAddress);
+        swapStable.marketRedeem(_amount);
+    }     
 
 }    

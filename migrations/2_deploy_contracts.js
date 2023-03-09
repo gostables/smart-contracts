@@ -6,6 +6,8 @@ var SwapStableCoin = artifacts.require("./SwapStableCoin.sol");
 var VaultStableCoin = artifacts.require("./VaultStableCoin.sol");
 var Rewards = artifacts.require("./Rewards.sol");
 
+var SwapGStable = artifacts.require("./SwapGStable.sol");
+
 
 module.exports = function (deployer) {
 // //   // USD
@@ -39,6 +41,12 @@ module.exports = function (deployer) {
   //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS"
   // );
 
+  // SwapGStable
+    deployer.deploy(
+    SwapGStable,
+    "TQny4yNYvTmSvJqZNUgEzKtKW6gCzhym6x"
+  );
+
 
 // //   //
 };
@@ -48,16 +56,16 @@ module.exports = function (deployer) {
 
 // For Nile Testnet
 
-let currencies = ["gTTDD"];
-module.exports = function (deployer) {
-  deployer.then(async () => {
-    for (let i = 0; i < currencies.length; i++) {
-      await deployer.deploy(gStable, currencies[i], currencies[i]);
-      console.log(currencies[i]);
-      console.log("gStable : ", gStable.address);
-    }
-  });
-};
+// let currencies = ["gTTDD"];
+// module.exports = function (deployer) {
+//   deployer.then(async () => {
+//     for (let i = 0; i < currencies.length; i++) {
+//       await deployer.deploy(gStable, currencies[i], currencies[i]);
+//       console.log(currencies[i]);
+//       console.log("gStable : ", gStable.address);
+//     }
+//   });
+// };
 
 
 
