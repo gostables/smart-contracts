@@ -1,0 +1,33 @@
+NILE
+  USDD 
+  THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU
+
+  JLMarket:
+    (base58) TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f
+    (hex) 41a303e1d03aafd10d3b22b748c277105cdb904e4b
+
+  Rewards:
+    (base58) TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS
+    (hex) 418c1da3bccfbfdb8afd61f21b7eee3eb8c126e97e
+
+  gStableManager:
+    (base58) TUnRL112cmACzZoKr6UZRsfT9bRaVjNofz
+    (hex) 41ce601aa16b4eb2ee39aded4a4f05029e397dd4e3
+
+  SwapStableCoin:
+    (base58) TAYZ1NfgmKUevrV5WzkDiQ3zci4NPiMdPB
+    (hex) 41064e6d2b0109c25d370b80ac3156fe02d80cc314
+
+  VaultStableCoin:
+    (base58) TKNqfLVHx9YWRmNiY7EdvyjFf1uw33QYn2
+    (hex) 4167314d269f237c79454542745319c1f59d64483b
+
+  BankDepository:
+    (base58) TFLyb4QUodxvAb94CAm3bm3zfRE9R9KKHn
+    (hex) 413af695335fcc8547e96e7c7929c166df59677836
+
+  TransferComptroller:
+    (base58) TS3fyDeYPM7K4HgLkv18PESKJdrrGsQBtQ
+    (hex) 41b05a3038ef945238a2ace9b2ab682f742088ead9
+
+

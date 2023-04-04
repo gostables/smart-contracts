@@ -4,19 +4,20 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./gStable.sol";
+import "./gStableManager.sol";
 import "./goStableBase.sol";
 import "./Rewards.sol";
 
 contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
-    mapping (uint => address) public gStableAddressMap;
-    mapping (uint => uint256) public gStableConversionRatioMap;
     mapping (uint => uint256) public gStableAccumulatedSwapFeesMap;
     mapping (uint => uint256) public gStableSwapFeesFactorMap;
     mapping (uint => uint256) public gStableUnderlyingCollateralMap;
 
     uint256 public rewardPC = 40;
 
-    address public rewardsAddress; 
+
+    IRewards rewards;
+    IgStableManager gStableLookup;
 
     event Deposit(
         address depositor,
@@ -32,9 +33,11 @@ contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
     constructor(
         address stableCoinAddress,
         address marketAddress,
-        address rewardsAddress_ 
+        address rewardsAddress_,
+        address gStableLookupAddress_
     ) goStableBase(stableCoinAddress, marketAddress) {
-        rewardsAddress = rewardsAddress_;
+        rewards = IRewards(rewardsAddress_);
+        gStableLookup = IgStableManager(gStableLookupAddress_);
     }
 
     function pause() public onlyAdmin(msg.sender) {
@@ -46,29 +49,24 @@ contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
     }   
     
     function setRewardsAddress(address addr) public onlyAdmin(msg.sender) {
-        rewardsAddress = addr;
-    }     
-
-    function setGStableAddress(uint id, address addr) public onlyAdmin(msg.sender) {
-        gStableAddressMap[id] = addr;
-        gStableSwapFeesFactorMap[id] = 30;
+        rewards = IRewards(addr);
     }
+    function setGStableLookup(address addr) public onlyAdmin(msg.sender) {
+        gStableLookup = IgStableManager(addr);
+    }         
 
     modifier hasGStableAddress(uint id) {
-        require(gStableAddressMap[id] != address(0), "No gStable exists for this ID");
+        require(gStableLookup.getGStableAddress(id) != address(0), "No gStable exists");
         _;
-    }    
-
-    function setConversion( uint id, uint256 ratio) public onlyAdmin(msg.sender) {
-        gStableConversionRatioMap[id] = ratio;
     }
-
-    function getConversion(uint id) external view returns (uint256) {
-        return (gStableConversionRatioMap[id]);
-    }    
+    
+    modifier isGStable(uint id) {
+        require(!gStableLookup.isStableCoin(id), "stable coins not allowed");
+        _;
+    }        
 
     modifier hasPositiveConversionRatio(uint id) {
-        require(gStableConversionRatioMap[id] > 0, "Conversion ratio must be positive");
+        require(gStableLookup.getConversion(id) > 0, "Conversion ratio must be positive");
         _;
     }    
 
@@ -84,7 +82,7 @@ contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
         rewardPC = _rewardPC;
     }
 
-    function deposit(uint id, uint256 _amount) external hasGStableAddress(id) hasPositiveConversionRatio(id) onlyPositive(_amount) whenNotPaused nonReentrant {
+    function deposit(uint id, uint256 _amount) external hasGStableAddress(id) isGStable(id) hasPositiveConversionRatio(id) onlyPositive(_amount) whenNotPaused nonReentrant {
         require(
             _amount <= stableCoin.balanceOf(msg.sender),
             "amount > stableCoinsbalance"
@@ -99,42 +97,30 @@ contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
         stableCoin.approve(address(market), _amount * 2);
         market.mint(_amount - swapFees);
 
-        uint256 tokens = ((_amount - swapFees) * gStableConversionRatioMap[id]) / 10000;
-        IgStable(gStableAddressMap[id]).mint(msg.sender, tokens);
-
-        
+        uint256 tokens = ((_amount - swapFees) * gStableLookup.getConversion(id)) / 10000;
+        IgStable(gStableLookup.getGStableAddress(id)).mint(msg.sender, tokens);
 
         emit Deposit(msg.sender, _amount, id);
     }
 
-    function withdraw(uint id, uint256 _tokens) external hasGStableAddress(id) hasPositiveConversionRatio(id) onlyPositive(_tokens) whenNotPaused nonReentrant {
+    function withdraw(uint id, uint256 _tokens) external hasGStableAddress(id) isGStable(id) hasPositiveConversionRatio(id) onlyPositive(_tokens) whenNotPaused nonReentrant {
+        address gStableAddress = gStableLookup.getGStableAddress(id);
+        IgStable gStable_ = IgStable(gStableAddress);
         require(
-            _tokens <= IgStable(gStableAddressMap[id]).balanceOf(msg.sender),
+            _tokens <= gStable_.balanceOf(msg.sender),
             "_tokens > gStableCoinsbalance"
         );
         
-        uint256 _amount = (_tokens * 10000) / gStableConversionRatioMap[id];
+        uint256 _amount = (_tokens * 10000) / gStableLookup.getConversion(id);
         uint256 swapFees = (_amount * gStableSwapFeesFactorMap[id]) / 10000;
         gStableAccumulatedSwapFeesMap[id] += swapFees;
         gStableUnderlyingCollateralMap[id] -= _amount;
 
-        IgStable(gStableAddressMap[id]).burn(msg.sender, _tokens);
+        gStable_.burn(msg.sender, _tokens);
         market.redeemUnderlying(_amount);
         stableCoin.transfer(msg.sender, _amount - swapFees);
 
         emit Withdrawal(msg.sender, _tokens, id);
-    }
-
-    function mint( address hodler, uint id, uint256 _tokens) external hasGStableAddress(id) onlyPositive(_tokens) onlyAdmin(msg.sender) {
-        IgStable(gStableAddressMap[id]).mint(hodler, _tokens);
-    }  
-
-    function burn( address hodler, uint id, uint256 _tokens) external hasGStableAddress(id) onlyPositive(_tokens) onlyAdmin(msg.sender) {
-        require(
-            _tokens <= IgStable(gStableAddressMap[id]).balanceOf(hodler),
-            "_tokens > gStableCoinsbalance"
-        );
-        IgStable(gStableAddressMap[id]).burn(hodler, _tokens);
     }
 
     function marketDeposit( uint256 _amount) external onlyPositive(_amount) onlyAdmin(msg.sender) {
@@ -146,31 +132,27 @@ contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
         market.redeemUnderlying(_amount);
     }    
 
-    function addSwapFees( address hodler, uint id, uint256 _swapFees) external hasGStableAddress(id) onlyPositive(_swapFees) onlyAdmin(msg.sender) {
-        require(
-            _swapFees <= stableCoin.balanceOf(hodler),
-            "swapFees > stableCoinsbalance"
-        );
-        
-        stableCoin.transferFrom(hodler, address(this), _swapFees);
-
+    function addSwapFees( uint id, uint256 _swapFees) external hasGStableAddress(id) onlyPositive(_swapFees) onlyAdmin(msg.sender) {
         gStableAccumulatedSwapFeesMap[id] += _swapFees;
-    }   
+    }
 
     function claim(uint256 merkleIndex, uint256 index, uint256 amount, bytes32[] calldata merkleProof) public onlyAdmin(msg.sender) {
-        IRewards(rewardsAddress).claim(merkleIndex, index, amount, merkleProof);
+        rewards.claim(merkleIndex, index, amount, merkleProof);
     } 
-      
 
     function transferRewards(uint id, address vaultAddress)
         external hasGStableAddress(id) hasPositiveConversionRatio(id) onlyAdmin(msg.sender) {
+
+        address gStableAddress = gStableLookup.getGStableAddress(id);
+        IgStable gStable_ = IgStable(gStableAddress); 
+
         require(vaultAddress != address(0));
 
         uint256 swapFeesAsRewards = (gStableAccumulatedSwapFeesMap[id] * rewardPC) / 100;
 
         // Transfer rewards in gStable to Vault
-        uint256 rewardTokens = (swapFeesAsRewards * gStableConversionRatioMap[id]) / 10000;
-        IgStable(gStableAddressMap[id]).mint(vaultAddress, rewardTokens);
+        uint256 rewardTokens = (swapFeesAsRewards * gStableLookup.getConversion(id)) / 10000;
+        gStable_.mint(vaultAddress, rewardTokens);
 
         // supply accumulateSwapFees to JL and get JL tokens
         stableCoin.approve(address(market), gStableAccumulatedSwapFeesMap[id] * 2);
@@ -179,23 +161,18 @@ contract SwapStableCoin is goStableBase, Pausable, ReentrancyGuard {
         //reset accumulatedSwapFees
         gStableAccumulatedSwapFeesMap[id] = 0;
     }
+
 }
 
 
 interface ISwapStableCoin {
 
-    function getConversion(uint id) external returns (uint256);
-
     function getSwapFeesFactor(uint id) external returns (uint256);
-
-    function mint( address hodler, uint id, uint256 _tokens) external;
-
-    function burn( address hodler, uint id, uint256 _tokens) external;
 
     function marketDeposit( uint256 _amount) external;
 
     function marketRedeem( uint256 _amount) external;
 
-    function addSwapFees( address hodler, uint id, uint256 _swapFees) external;    
+    function addSwapFees( uint id, uint256 _swapFees) external;    
 }
 

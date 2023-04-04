@@ -4,6 +4,7 @@ node_modules
 build
 .env
 
+play/
 scratch/
 tmp-511360ux7o4xIwvMAL/
 .vscode/

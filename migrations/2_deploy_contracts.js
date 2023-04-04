@@ -1,12 +1,21 @@
 const Web3 = require("web3");
-var USDD = artifacts.require("./USD.sol");
-var JLMarket = artifacts.require("./JLMarket.sol");
-var gStable = artifacts.require("./gStable.sol");
+// var USDD = artifacts.require("./USD.sol");
+// var JLMarket = artifacts.require("./JLMarket.sol");
+// var gStable = artifacts.require("./gStable.sol");
 var SwapStableCoin = artifacts.require("./SwapStableCoin.sol");
 var VaultStableCoin = artifacts.require("./VaultStableCoin.sol");
-var Rewards = artifacts.require("./Rewards.sol");
+// var Rewards = artifacts.require("./Rewards.sol");
 
-var SwapGStable = artifacts.require("./SwapGStable.sol");
+// var SwapGStable = artifacts.require("./SwapGStable.sol");
+
+
+/****SORREL***/
+// var BankDepository = artifacts.require("./BankDepository.sol");
+// var TransferComptroller = artifacts.require("./comptrollers/TransferComptroller.sol");
+// var Bank = artifacts.require("./play/Bank.sol");
+// var Transfer = artifacts.require("./play/Transfer.sol");
+// var gStableManager = artifacts.require("./gStableManager.sol");
+
 
 
 module.exports = function (deployer) {
@@ -22,6 +31,16 @@ module.exports = function (deployer) {
 //   //   "jUSDD"
 //   // );
 
+//   // JLMarket
+  // deployer.deploy(
+  //   JLMarket,
+  //   "TAUem3htzq8mD92xh6rTEDB8uiBUokRGRr",
+  //   "jBTC",
+  //   "jBTC"
+  // );
+
+
+
   // // Rewards
   // deployer.deploy(Rewards);
 
@@ -30,22 +49,47 @@ module.exports = function (deployer) {
   //   SwapStableCoin,
   //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
   //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS"
+  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
+  //   "TUnRL112cmACzZoKr6UZRsfT9bRaVjNofz"
   // );
 
-  // // Vault
-  // deployer.deploy(
-  //   VaultStableCoin,
-  //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS"
-  // );
+  // Vault
+  deployer.deploy(
+    VaultStableCoin,
+    "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+    "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+    "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
+    "TUnRL112cmACzZoKr6UZRsfT9bRaVjNofz"
+  );
 
   // SwapGStable
-    deployer.deploy(
-    SwapGStable,
-    "TQny4yNYvTmSvJqZNUgEzKtKW6gCzhym6x"
-  );
+  //   deployer.deploy(
+  //   SwapGStable,
+  //   "TQny4yNYvTmSvJqZNUgEzKtKW6gCzhym6x"
+  // );
+
+
+
+  // gStableManager
+  //   deployer.deploy(
+  //   gStableManager,
+  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f"
+  // );
+
+  // deployer.deploy(
+  //   BankDepository,
+  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
+  //   "TUnRL112cmACzZoKr6UZRsfT9bRaVjNofz");
+
+  //   TransferComptroller
+  //   deployer.deploy(
+  //     TransferComptroller,
+  //     "TFLyb4QUodxvAb94CAm3bm3zfRE9R9KKHn"
+  // );
+
+  // deployer.deploy(Bank);
+  // deployer.deploy(Transfer, "TK4Kw2dHPULFM22YHWg7P33cAK1AAkteGL");
 
 
 // //   //

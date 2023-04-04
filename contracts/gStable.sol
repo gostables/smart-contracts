@@ -24,25 +24,8 @@ contract gStable is ERC20, AdminAuth {
     }
 }
 
-interface IgStable {
+interface IgStable is IERC20{
     function mint(address reciever, uint256 mintAmount) external;
 
     function burn(address hodler, uint256 burnAmount) external;
-
-    function balanceOf(address account) external view returns (uint256);
-
-    function transfer(address to, uint256 amount) external returns (bool);
-
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
-
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
 }
