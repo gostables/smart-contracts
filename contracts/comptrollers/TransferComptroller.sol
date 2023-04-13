@@ -13,20 +13,30 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
     using ECDSA for bytes32;
 
-    event TransactionSubmitted(
+    event TransactionInitiated(
         address indexed from,
         address indexed to,
         uint id,
         uint value,
-        bytes32 txHash
+        uint nonce
     );  
     event TransactionExecuted(
         address indexed from,
         address indexed to,
         uint id,
         uint value,
-        bytes32 txHash
-    );        
+        uint nonce
+    );
+
+    event TransactionCancelled(
+        address indexed from,
+        address indexed to,
+        uint id,
+        uint value,
+        uint nonce
+    );            
+
+    uint nonce;
 
     struct Transaction {
         address from;
@@ -35,6 +45,7 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
         uint value;
         uint initiatedTime;
         uint executedTime;
+        uint nonce;
         bytes32 txHash;
     }
 
@@ -51,7 +62,7 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
         bank = IBankDepository(depositoryAddress);
     }
 
-    modifier onlyPositive(uint256 val) {
+    modifier onlyPositive(uint val) {
         require(val > 0, "<0");
         _;
     }    
@@ -74,8 +85,10 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
 
     function getUserTransactions(address hodler) public view returns(
         address[] memory addressPair, 
+        uint[] memory id, 
         uint[] memory value, 
         uint[] memory timePair, 
+        uint[] memory nonceList,
         bytes32[] memory txHash,
         uint[] memory statusList){
         
@@ -83,40 +96,56 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
         uint pairLength = 2 * userTxs.length;
         
         address[] memory addressPairs = new address[](pairLength);
-        uint256[] memory values = new uint256[](userTxs.length);
-        uint256[] memory timePairs = new uint256[](pairLength);
+        uint[] memory ids = new uint[](userTxs.length);
+        uint[] memory values = new uint[](userTxs.length);
+        uint[] memory timePairs = new uint[](pairLength);
+        uint[] memory nonces = new uint[](userTxs.length);
         bytes32[] memory txHashs = new bytes32[](userTxs.length);
-        uint256[] memory statuss = new uint256[](userTxs.length);
+        uint[] memory statuss = new uint[](userTxs.length);
         
         for (uint i = 0; i < userTxs.length; i++) {
             Transaction memory userTx = hashTxMapping[userTxs[i]];
             addressPairs[i] = userTx.from;
-            addressPairs[i + userTxs.length] = userTx.from;
+            addressPairs[i + userTxs.length] = userTx.to;
+            ids[i] = userTx.id;
             values[i] = userTx.value;
             timePairs[i] = userTx.initiatedTime;
             timePairs[i + userTxs.length] = userTx.executedTime;
             statuss[i] = status[userTxs[i]];
             txHashs[i] = userTx.txHash;
+            nonces[i] = userTx.nonce;
         }
         
-        return (addressPairs, values, timePairs, txHashs, statuss);
+        return (addressPairs, ids, values, timePairs, nonces, txHashs, statuss);
     }
+
+    function getNonce() private returns(uint){
+        return nonce++;
+    } 
 
     function initiateTransaction(
         address _from,
         address _to,
         uint _id, 
         uint _value
-    ) public onlyAdmin(msg.sender) returns(bytes32) {
+    ) public onlyAdmin(msg.sender) {
 
-        uint nonce_ = userTxHashMapping[_from].length;
+        uint nonce_ = getNonce();
 
         bytes32 txHash_ = getTxHash(_from, _to, _id, _value, nonce_);
         require(status[txHash_] < 1, "tx already exists");
 
         uint status_ = 1;
         
-        Transaction memory txn = Transaction({from:_from, to:_to, id:_id, value:_value, initiatedTime: block.timestamp, executedTime: 0, txHash: txHash_});
+        Transaction memory txn = Transaction({
+            from:_from, 
+            to:_to, 
+            id:_id, 
+            value:_value, 
+            nonce:nonce_, 
+            initiatedTime: block.timestamp, 
+            executedTime: 0, 
+            txHash: txHash_});
 
         status[txHash_] = status_;   
 
@@ -124,9 +153,7 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
         userTxHashMapping[_from].push(txHash_);
         userTxHashMapping[_to].push(txHash_);
 
-        emit TransactionSubmitted(_from, _to, _id, _value, txHash_);
-
-        return txHash_;
+        emit TransactionInitiated(_from, _to, _id, _value, nonce_);
     }
     
     function executeTransaction(
@@ -134,14 +161,17 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
         address _to,
         uint _id, 
         uint _amount,
-        uint _nonce,
-        bytes memory _sig
+        uint _nonce
     ) external onlyAdmin(msg.sender) {
         
         bytes32 txHash = getTxHash(_from, _to, _id, _amount, _nonce);
+        
+        executeTransaction(txHash);
+    }
+
+    function executeTransaction(bytes32 txHash) public onlyAdmin(msg.sender) {
 
         require(status[txHash] < 2, "tx executed");
-        require(_checkSigs(_sig, txHash), "invalid sig");
         
         Transaction storage txn = hashTxMapping[txHash];
 
@@ -150,8 +180,28 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
         status[txHash] = status_;
         txn.executedTime = block.timestamp;
 
-        emit TransactionExecuted(txn.from, txn.to, txn.id, txn.value, txn.txHash);
-    }       
+        emit TransactionExecuted(txn.from, txn.to, txn.id, txn.value, txn.nonce);
+    }  
+
+    function cancelTransaction(
+        address _from,
+        address _to,
+        uint _id, 
+        uint _amount,
+        uint _nonce) public {
+
+            require(msg.sender == _from, "not auth");
+
+            bytes32 txHash = getTxHash(_from, _to, _id, _amount, _nonce);
+            
+            require(status[txHash] < 2, "tx executed");
+            
+            status[txHash] = 2;
+            
+            Transaction storage txn = hashTxMapping[txHash];
+            
+            emit TransactionCancelled(txn.from, txn.to, txn.id, txn.value, txn.nonce);
+    }          
 
     function getTxHash(
         address _from,
@@ -162,15 +212,4 @@ contract TransferComptroller is AdminAuth, Pausable, ReentrancyGuard {
     ) public view returns (bytes32) {
         return keccak256(abi.encodePacked(address(this), _from, _to, _id, _amount, _nonce));
     }
-
-    function _checkSigs(
-        bytes memory _sig,
-        bytes32 _txHash
-    ) private view returns (bool) {
-        bytes32 ethSignedHash = _txHash.toEthSignedMessageHash();
-
-        address signer = ethSignedHash.recover(_sig);
-        
-        return signer == hashTxMapping[_txHash].from;
-    }    
 }

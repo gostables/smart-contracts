@@ -10,10 +10,11 @@ var VaultStableCoin = artifacts.require("./VaultStableCoin.sol");
 
 
 /****SORREL***/
-// var BankDepository = artifacts.require("./BankDepository.sol");
-// var TransferComptroller = artifacts.require("./comptrollers/TransferComptroller.sol");
-// var Bank = artifacts.require("./play/Bank.sol");
-// var Transfer = artifacts.require("./play/Transfer.sol");
+var BankDepository = artifacts.require("./BankDepository.sol");
+var TransferComptroller = artifacts.require("./comptrollers/TransferComptroller.sol");
+var ConvertComptroller = artifacts.require("./comptrollers/ConvertComptroller.sol");
+var Vault = artifacts.require("./Vault.sol");
+
 // var gStableManager = artifacts.require("./gStableManager.sol");
 
 
@@ -54,13 +55,13 @@ module.exports = function (deployer) {
   // );
 
   // Vault
-  deployer.deploy(
-    VaultStableCoin,
-    "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
-    "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-    "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
-    "TUnRL112cmACzZoKr6UZRsfT9bRaVjNofz"
-  );
+  // deployer.deploy(
+  //   VaultStableCoin,
+  //   "THJ6CYd8TyNzHFrdLTYQ1iAAZDrf5sEsZU",
+  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
+  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
+  //   "TUnRL112cmACzZoKr6UZRsfT9bRaVjNofz"
+  // );
 
   // SwapGStable
   //   deployer.deploy(
@@ -68,30 +69,32 @@ module.exports = function (deployer) {
   //   "TQny4yNYvTmSvJqZNUgEzKtKW6gCzhym6x"
   // );
 
-
-
   // gStableManager
   //   deployer.deploy(
   //   gStableManager,
   //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f"
   // );
 
-  // deployer.deploy(
-  //   BankDepository,
-  //   "TQq9o4PahyoLociVzCnBMRRDdPZrNNkW1f",
-  //   "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
-  //   "TUnRL112cmACzZoKr6UZRsfT9bRaVjNofz");
+  // BankDepository
+  deployer.deploy(
+    BankDepository,
+    "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
+    "TZDofabgTUK43589ow9zD3LseNPmVYqk6g");
 
-  //   TransferComptroller
+  // TransferComptroller
   //   deployer.deploy(
   //     TransferComptroller,
-  //     "TFLyb4QUodxvAb94CAm3bm3zfRE9R9KKHn"
+  //     "TDdRmnn8Qrwcfck5SKBeno1pRYAGBcc9pL"
   // );
 
-  // deployer.deploy(Bank);
-  // deployer.deploy(Transfer, "TK4Kw2dHPULFM22YHWg7P33cAK1AAkteGL");
+  // // ConversionComptroller
+  //   deployer.deploy(
+  //     ConvertComptroller,
+  //     "TDdRmnn8Qrwcfck5SKBeno1pRYAGBcc9pL"
+  // );
 
-
+  
+  
 // //   //
 };
 
