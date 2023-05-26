@@ -1,19 +1,22 @@
 const Web3 = require("web3");
-// var USDD = artifacts.require("./USD.sol");
+// var USDT = artifacts.require("./USD.sol");
 // var JLMarket = artifacts.require("./JLMarket.sol");
-// var gStable = artifacts.require("./gStable.sol");
-var SwapStableCoin = artifacts.require("./SwapStableCoin.sol");
-var VaultStableCoin = artifacts.require("./VaultStableCoin.sol");
+ // var gStable = artifacts.require("./gStable.sol");
+// var SwapStableCoin = artifacts.require("./SwapStableCoin.sol");
+// var VaultStableCoin = artifacts.require("./VaultStableCoin.sol");
 // var Rewards = artifacts.require("./Rewards.sol");
 
 // var SwapGStable = artifacts.require("./SwapGStable.sol");
 
 
 /****SORREL***/
-var BankDepository = artifacts.require("./BankDepository.sol");
-var TransferComptroller = artifacts.require("./comptrollers/TransferComptroller.sol");
-var ConvertComptroller = artifacts.require("./comptrollers/ConvertComptroller.sol");
-var Vault = artifacts.require("./Vault.sol");
+// var BankDepository = artifacts.require("./BankDepository.sol");
+// var TransferComptroller = artifacts.require("./comptrollers/TransferComptroller.sol");
+// var ConvertComptroller = artifacts.require("./comptrollers/ConvertComptroller.sol");
+// var Vault = artifacts.require("./Vault.sol");
+// var VaultDepository = artifacts.require("./VaultDepository.sol");
+// var MerchantDepository = artifacts.require("./MerchantDepository.sol");
+var BatchTransferComptroller = artifacts.require("./comptrollers/BatchTransferComptroller.sol");
 
 // var gStableManager = artifacts.require("./gStableManager.sol");
 
@@ -21,7 +24,7 @@ var Vault = artifacts.require("./Vault.sol");
 
 module.exports = function (deployer) {
 // //   // USD
-//   // deployer.deploy(USDD);
+  // deployer.deploy(USDT);
 // //   //
 // //   //
 //   // JLMarket
@@ -33,13 +36,13 @@ module.exports = function (deployer) {
 //   // );
 
 //   // JLMarket
-  // deployer.deploy(
-  //   JLMarket,
-  //   "TAUem3htzq8mD92xh6rTEDB8uiBUokRGRr",
-  //   "jBTC",
-  //   "jBTC"
-  // );
-
+//   deployer.deploy(
+//     JLMarket,
+//     "TMWEUK2VzCKb8J1KqzYSyenWgj9MfrhZjm",
+//     "jUSDT",
+//     "jUSDT"
+//   );
+// };
 
 
   // // Rewards
@@ -76,22 +79,42 @@ module.exports = function (deployer) {
   // );
 
   // BankDepository
-  deployer.deploy(
-    BankDepository,
-    "TNk57JydfHSnyh95gdRwvt8XFarEHaLDnS",
-    "TZDofabgTUK43589ow9zD3LseNPmVYqk6g");
+  // deployer.deploy(
+  //   BankDepository,
+  //   "TQoiXqruw4SqYPwHAd6QiNZ3ES4rLsejAj",
+  //   "TFNqfwJtaimUAYk79Lsru6L7JWMss4Fboq");
 
   // TransferComptroller
   //   deployer.deploy(
   //     TransferComptroller,
-  //     "TDdRmnn8Qrwcfck5SKBeno1pRYAGBcc9pL"
+  //     "TSEZNy1QMWpXuDMFsSeb1VnnhMrbskyGKf"
   // );
 
   // // ConversionComptroller
   //   deployer.deploy(
   //     ConvertComptroller,
-  //     "TDdRmnn8Qrwcfck5SKBeno1pRYAGBcc9pL"
+  //     "TSEZNy1QMWpXuDMFsSeb1VnnhMrbskyGKf"
   // );
+
+  // // VaultDepository
+  //   deployer.deploy(
+  //     VaultDepository,
+  //     "TLumYZM6rRs5xHSZEzD6EQG9Kbwa2qvCym", //BankDepository
+  //     "2", //credit limit %
+  //     "TZDofabgTUK43589ow9zD3LseNPmVYqk6g" //gStableManager
+  // );
+  // // MerchantDepository
+  //   deployer.deploy(
+  //     MerchantDepository,
+  //     "TLumYZM6rRs5xHSZEzD6EQG9Kbwa2qvCym", //BankDepository
+  //     "20", //credit limit %
+  //     "TZDofabgTUK43589ow9zD3LseNPmVYqk6g" //gStableManager
+  // );
+  // // BatchTransferComptroller
+    deployer.deploy(
+      BatchTransferComptroller,
+      "TLumYZM6rRs5xHSZEzD6EQG9Kbwa2qvCym" //BankDepository Nile
+  );
 
   
   
@@ -103,7 +126,7 @@ module.exports = function (deployer) {
 
 // For Nile Testnet
 
-// let currencies = ["gTTDD"];
+// let currencies = ["gOMR","gMYR"];
 // module.exports = function (deployer) {
 //   deployer.then(async () => {
 //     for (let i = 0; i < currencies.length; i++) {
@@ -151,7 +174,19 @@ module.exports = function (deployer) {
 
 // // For Tron Mainnet
 
-// let currencies = ["gTTD","gXCD","gBBD","gJMD","gAWG","gDOP","gBSD","gKYD","gCUP","gHTG","gEUR"];
+
+// let currencies = ["gHTG","gEUR","gGBP"];
+// module.exports = function (deployer) {
+//   deployer.then(async () => {
+//     for (let i = 0; i < currencies.length; i++) {
+//       await deployer.deploy(gStable, currencies[i], currencies[i]);
+//       console.log(currencies[i]);
+//       console.log("gStable : ", gStable.address);
+//     }
+//   });
+// };
+
+// let currencies = ["gAWG","gDOP","gBSD","gKYD","gCUP","gHTG","gEUR","gGBP"];
 // const mainnetUSDD = "TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn";
 // const mainnetJLUSDD = "TX7kybeP6UwTBRHLNPYmswFESHfyjm9bAS";
 
