@@ -10,6 +10,8 @@ import "./Rewards.sol";
 import "./JLMarket.sol";
 
 contract BankDepository is AdminAuth, Pausable, ReentrancyGuard {
+    uint public usddId;  // ID of USDD stablecoin
+
     mapping(uint => uint256) public gStableTotalValueMap;
     mapping(uint => mapping(address => uint256)) public  gStableBalanceMap;
 
@@ -19,6 +21,7 @@ contract BankDepository is AdminAuth, Pausable, ReentrancyGuard {
     event Withdrawal(address withdrawer, uint256 _tokens, uint gStableId);
     event Sent(address from, uint256 _tokens, uint gStableId, address to);
     event Exchange(address from, uint fromGStableId, uint256 fromTokens,  uint toGStableId, uint256 toTokens);
+    event Claimed(address to, uint256 amount);
 
     IRewards rewards;
     IgStableManager gStableLookup;
@@ -56,6 +59,10 @@ contract BankDepository is AdminAuth, Pausable, ReentrancyGuard {
 
     function setRewards(address rewardsAddress_) public onlyAdmin(msg.sender) {
         rewards = IRewards(rewardsAddress_);
+    }
+
+    function setUsddId(uint usddId_) public onlyAdmin(msg.sender) {
+        usddId = usddId_;  // Set the usddId value
     }
 
     function setGStableLookup(address addr) public onlyAdmin(msg.sender) {
@@ -216,7 +223,16 @@ contract BankDepository is AdminAuth, Pausable, ReentrancyGuard {
 
     function claim(uint256 merkleIndex, uint256 index, uint256 amount, bytes32[] calldata merkleProof) public onlyAdmin(msg.sender) {
         rewards.claim(merkleIndex, index, amount, merkleProof);
-    }      
+        
+        // Transfer the claimed USDD amount to the admin's sender address
+        address adminSender = msg.sender;
+        address usddAddress = gStableLookup.getGStableAddress(usddId); 
+        IgStable usdd = IgStable(usddAddress);
+        usdd.transfer(adminSender, amount);
+
+        emit Claimed(adminSender, amount);
+    }    
+
 }
 
 interface IBankDepository {
