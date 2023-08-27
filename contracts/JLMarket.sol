@@ -73,17 +73,8 @@ contract JLMarket is ERC20 {
         return balance;
     }
 
-    /**
-     * @notice Returns the current per-block supply interest rate for this cToken
-     * @return The supply interest rate per block, scaled by 1e18
-     */
-    function supplyRatePerBlock() external view returns (uint256) {
-        return supplyRate;
-    }
 
-    function setSupplyRatePerBlock(uint256 _supplyRate) external {
-        supplyRate = _supplyRate;
-    }
+
 }
 
 interface IJLMarket {
@@ -94,4 +85,11 @@ interface IJLMarket {
     function redeemUnderlying(uint256 redeemAmount) external returns (uint256);
 
     function balanceOfUnderlying(address owner) external returns (uint256);
+
+    function borrow(uint256 borrowAmount) external returns(uint256);
+
+    function repayBorrow(uint256 amount) external returns(uint256);
+
+    function getAccountSnapshot(address account) external view returns(uint256, uint256, uint256, uint256);
+
 }

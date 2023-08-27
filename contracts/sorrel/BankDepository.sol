@@ -3,11 +3,11 @@ pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./gStableManager.sol";
-import "./AdminAuth.sol";
-import "./gStable.sol";
-import "./Rewards.sol";
-import "./JLMarket.sol";
+import "../gStableManager.sol";
+import "../AdminAuth.sol";
+import "../gStable.sol";
+import "../Rewards.sol";
+import "../JLMarket.sol";
 
 contract BankDepository is AdminAuth, Pausable, ReentrancyGuard {
     uint public usddId;  // ID of USDD stablecoin
@@ -26,7 +26,7 @@ contract BankDepository is AdminAuth, Pausable, ReentrancyGuard {
     IRewards rewards;
     IgStableManager gStableLookup;
 
-    // 1 deposit 2 withdraw 3 send 4 convert 5 transferGL 6 convertGL
+    // 1 deposit 2 withdraw 3 send 4 convert 5 moveGL 6 exchangeGL
     mapping(uint => uint) public functionFeeBasisPoint;
 
     constructor(address rewardsAddress_,

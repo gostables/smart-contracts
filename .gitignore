@@ -1,9 +1,13 @@
-
-src/js/metacoin-config.js
+sorrel-deployment.txt
+olddeployment.txt
+deployment.txt
+tronbox.js
 node_modules
 build
 .env
 
+alpha/
+migrations/
 play/
 scratch/
 tmp-511360ux7o4xIwvMAL/

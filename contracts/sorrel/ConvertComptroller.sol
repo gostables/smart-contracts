@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../AdminAuth.sol";
 import "../gStable.sol";
 import "../Rewards.sol";
-import "../BankDepository.sol";
+import "./BankDepository.sol";
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 

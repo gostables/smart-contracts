@@ -4,9 +4,9 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./BankDepository.sol";
-import "./gStableManager.sol";
-import "./AdminAuth.sol";
-import "./gStable.sol";
+import "../gStableManager.sol";
+import "../AdminAuth.sol";
+import "../gStable.sol";
 
 
 contract VaultDepository is AdminAuth, Pausable, ReentrancyGuard {
