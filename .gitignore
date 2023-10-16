@@ -14,3 +14,4 @@ tmp-511360ux7o4xIwvMAL/
 .vscode/
 abiExtractor.js
 abi.js
+migrations/2_deploy_contracts.js
