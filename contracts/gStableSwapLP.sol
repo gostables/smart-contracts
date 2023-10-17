@@ -155,6 +155,23 @@ contract gStableSwapLP is goStableBase, Pausable, ReentrancyGuard {
     }
 
     /**
+     * @dev Increases underlying collateral and reserve amounts based on any USDD stored in contract.
+     * @param id The ID of the gStable token.
+     * @param _amount The amount of USDD to be allocated to the reserve.
+     */
+    function increaseReserve( uint id, uint256 _amount) external hasGStableAddress(id) onlyPositive(_amount) nonReentrant onlyAdmin(msg.sender) {
+        // Update mappings
+        gStableUnderlyingCollateralMap[id] = gStableUnderlyingCollateralMap[id].add(_amount);
+        gStableCollateralReserveMap[id] = gStableCollateralReserveMap[id].add(_amount);
+
+        // Supply to JL Market
+        stableCoin.approve(address(market), _amount.mul(2));
+        market.mint(_amount);
+
+        emit ReserveAdded(id, _amount);
+    }
+
+    /**
      * @dev Adds USDD to the reserve, increasing underlying collateral and reserve amounts.
      * @param id The ID of the gStable token.
      * @param _amount The amount of USDD to be added to the reserve.
